@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
-import { PrivyProvider, usePrivy } from "@privy-io/react-auth";
+import { PrivyProvider, useLogin, usePrivy } from "@privy-io/react-auth";
 import { useCreateWallet } from "@privy-io/react-auth/extended-chains";
 
 /**
@@ -75,11 +75,22 @@ function findStellarAddress(linkedAccounts: unknown[] | undefined): string | und
 }
 
 function PrivyAuthBridge({ children }: { children: ReactNode }) {
-  const { ready, authenticated, user, login, logout } = usePrivy();
+  const { ready, authenticated, user, logout } = usePrivy();
   const { createWallet } = useCreateWallet();
   const [createdAddress, setCreatedAddress] = useState<string>();
   const [creatingWallet, setCreatingWallet] = useState(false);
+  const [authError, setAuthError] = useState<string>();
   const creating = useRef(false);
+
+  // Privy reports login problems as a code. Show it, so a failure isn't silent.
+  const { login } = useLogin({
+    onComplete: () => setAuthError(undefined),
+    onError: (code) => {
+      console.error("Privy login error:", code);
+      // Closing the login window also reports an error; that's not a problem.
+      if (String(code) !== "exited_auth_flow") setAuthError(String(code));
+    },
+  });
 
   const linkedAddress = findStellarAddress(user?.linkedAccounts);
   const stellarAddress = linkedAddress ?? createdAddress;
@@ -91,7 +102,10 @@ function PrivyAuthBridge({ children }: { children: ReactNode }) {
     setCreatingWallet(true);
     createWallet({ chainType: "stellar" })
       .then(({ wallet }) => setCreatedAddress(wallet.address))
-      .catch((err) => console.error("Could not create Stellar wallet", err))
+      .catch((err) => {
+        console.error("Could not create Stellar wallet", err);
+        setAuthError(`Could not create your Stellar wallet${err instanceof Error && err.message ? `: ${err.message}` : ""}`);
+      })
       .finally(() => {
         creating.current = false;
         setCreatingWallet(false);
@@ -117,6 +131,17 @@ function PrivyAuthBridge({ children }: { children: ReactNode }) {
       }}
     >
       {children}
+      {authError && (
+        <div role="alert" className="fixed inset-x-4 bottom-4 z-[60] mx-auto flex max-w-md items-start gap-3 rounded-2xl bg-ink p-4 text-sm text-white">
+          <p className="flex-1 break-words">
+            <span className="block font-semibold">Sign-in problem</span>
+            <span className="mt-0.5 block text-white/80">{authError}</span>
+          </p>
+          <button onClick={() => setAuthError(undefined)} className="rounded-full border border-white/30 px-3 py-1 text-xs font-semibold">
+            Close
+          </button>
+        </div>
+      )}
     </AuthContext.Provider>
   );
 }

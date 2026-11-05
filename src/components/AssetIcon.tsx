@@ -1,12 +1,14 @@
 import type { Asset } from "../data/assets";
 
-type Size = "sm" | "md" | "lg" | "xl";
+type Size = "sm" | "md" | "lg" | "xl" | "fill";
 
 const sizes: Record<Size, string> = {
   sm: "h-7 w-7 text-[11px] rounded-full",
   md: "h-9 w-9 text-xs rounded-full",
   lg: "h-[88px] w-[88px] text-2xl rounded-xl",
   xl: "h-36 w-36 text-5xl rounded-full",
+  // Scales with its container (about 60% of its height), so it fits cards of any size.
+  fill: "h-[60%] aspect-square text-4xl rounded-full",
 };
 
 export function AssetIcon({ asset, size = "md", className = "" }: { asset: Asset; size?: Size; className?: string }) {

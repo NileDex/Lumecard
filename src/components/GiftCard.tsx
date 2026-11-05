@@ -30,7 +30,7 @@ export function GiftCard({ asset, theme, amount, showValue = false, className = 
 
       <div className="absolute inset-0 grid place-items-center">
         {isAsset ? (
-          <AssetIcon asset={asset} size="xl" className="ring-8 ring-white/25" />
+          <AssetIcon asset={asset} size="fill" className="ring-4 ring-white/25 sm:ring-8" />
         ) : (
           <div className="text-center text-white drop-shadow">
             <p className="text-3xl font-bold tracking-tight sm:text-4xl">{theme.tagline}</p>

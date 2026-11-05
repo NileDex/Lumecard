@@ -11,7 +11,7 @@ import { getAsset, type Asset } from "../data/assets";
 function HeroCard({ asset, label, className, rotate }: { asset: Asset; label: string; className: string; rotate: string }) {
   return (
     <div
-      className={`animate-float absolute aspect-[1.6/1] w-[300px] rounded-2xl bg-gradient-to-br p-5 text-white shadow-2xl sm:w-[340px] ${asset.gradient} ${className}`}
+      className={`animate-float absolute aspect-[1.6/1] w-[230px] rounded-2xl bg-gradient-to-br p-4 text-white shadow-2xl min-[420px]:w-[290px] min-[420px]:p-5 sm:w-[340px] ${asset.gradient} ${className}`}
       style={{ ["--r" as string]: rotate, transform: `rotate(${rotate})` }}
     >
       <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-widest opacity-80">
@@ -51,7 +51,7 @@ export default function Landing() {
   }, [authenticated, stellarAddress, navigate]);
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen overflow-x-hidden">
       <Header />
 
       {/* Hero */}
@@ -79,7 +79,7 @@ export default function Landing() {
             </div>
           </div>
           <div className="relative h-[340px]">
-            <HeroCard asset={getAsset("xlm")!} label="Stellar" className="left-4 top-20" rotate="22deg" />
+            <HeroCard asset={getAsset("xlm")!} label="Stellar" className="left-0 top-20 sm:left-4" rotate="22deg" />
             <HeroCard asset={getAsset("usdc")!} label="USDC" className="right-0 top-2" rotate="-14deg" />
           </div>
         </div>

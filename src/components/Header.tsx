@@ -130,7 +130,8 @@ export function Header(_props: { signedIn?: boolean }) {
           <Logo />
         </Link>
         <div className="flex items-center gap-2">
-          <button className="flex h-9 items-center gap-1.5 rounded-full px-3 text-xs font-semibold text-neutral-600 hover:bg-neutral-100">
+          {/* Hidden on very small screens, where the header needs the room. */}
+          <button className="hidden h-9 items-center gap-1.5 rounded-full px-3 text-xs font-semibold text-neutral-600 min-[400px]:flex">
             <Globe className="h-3.5 w-3.5" /> EN
           </button>
           {signedIn ? (
@@ -138,7 +139,7 @@ export function Header(_props: { signedIn?: boolean }) {
           ) : (
             <button
               onClick={() => openConnect(() => navigate("/app"))}
-              className="rounded-full bg-ink px-4 py-2 text-sm font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.25),inset_0_-2px_0_rgba(0,0,0,0.4)]"
+              className="whitespace-nowrap rounded-full bg-ink px-3.5 py-2 text-sm font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.25),inset_0_-2px_0_rgba(0,0,0,0.4)] sm:px-4"
             >
               Connect wallet
             </button>

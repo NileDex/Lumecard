@@ -238,7 +238,7 @@ export async function claimGiftOnChain(opts: { recipient: string; secret: string
   const sim = await server.simulateTransaction(payloadTx);
   if (!rpc.Api.isSimulationSuccess(sim) || !sim.result) throw new Error("Could not prepare the claim");
   const payload = scValToNative(sim.result.retval) as Uint8Array;
-  const giftSignature = giftKeypair.sign(payload as Buffer);
+  const giftSignature = giftKeypair.sign(asArg(payload));
 
   const account = await server.getAccount(opts.recipient);
   const call = contract.call("claim", xdr.ScVal.scvBytes(giftKey), recipientScVal, xdr.ScVal.scvBytes(giftSignature));
@@ -260,8 +260,15 @@ const is404 = (e: unknown) => (e as { response?: { status?: number } })?.respons
 
 const fromHex = (hex: string) => Uint8Array.from(hex.match(/.{2}/g) ?? [], (h) => parseInt(h, 16));
 
+/**
+ * The Stellar SDK's type definitions ask for a Node "Buffer", but at runtime any byte array works
+ * (and Buffer doesn't exist in the browser). This hands a plain byte array to such a parameter
+ * without naming the Node type, so the build doesn't depend on Node's type definitions.
+ */
+const asArg = <T>(bytes: Uint8Array): T => bytes as unknown as T;
+
 /** The purse's Stellar address: the gift key's public half, as an account address. */
-export const purseAddressFor = (giftKeyHex: string): string => StrKey.encodeEd25519PublicKey(fromHex(giftKeyHex) as Buffer);
+export const purseAddressFor = (giftKeyHex: string): string => StrKey.encodeEd25519PublicKey(asArg(fromHex(giftKeyHex)));
 
 /** XLM held by the gift's purse, or null if there is no purse (never funded, or already used). */
 export async function getPurseBalance(giftKeyHex: string): Promise<number | null> {
@@ -337,7 +344,7 @@ export async function recoverPurseOnChain(opts: { sender: string; giftKeyHex: st
 export async function takeBackGiftOnChain(opts: { sender: string; giftKeyHex: string; sign: SignHash }): Promise<void> {
   const server = new rpc.Server(SOROBAN_RPC_URL);
   const account = await server.getAccount(opts.sender);
-  const call = new Contract(GIFT_CONTRACT).call("refund", xdr.ScVal.scvBytes(fromHex(opts.giftKeyHex) as Buffer));
+  const call = new Contract(GIFT_CONTRACT).call("refund", xdr.ScVal.scvBytes(asArg(fromHex(opts.giftKeyHex))));
   const built = new TransactionBuilder(account, { fee: BASE_FEE, networkPassphrase: Networks.TESTNET })
     .addOperation(call)
     .setTimeout(120)
